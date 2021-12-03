@@ -24,7 +24,7 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 4.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -133,9 +133,9 @@ int main()
  
     // positions of the point lights
     glm::vec3 pointLightPositions[] = {
-        glm::vec3( 2.0f,  2.0f,  4.0f),
-        glm::vec3( 2.3f, -3.3f, -4.0f),
-        glm::vec3(-4.0f,  2.0f, -12.0f),
+        glm::vec3( 2.0,  2.0f,  1.0f),
+        glm::vec3( -2.0f, -2.0f, -1.0f),
+        glm::vec3(1.0f,  0.0f, 1.0f),
         glm::vec3( 0.0f,  0.0f, 0.0f)
     };
     // first, configure the cube's VAO (and VBO)
@@ -165,6 +165,11 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+    
+
+    float light3_mov_y;
+    float light3_mov_z;
+
 
 
     // render loop
@@ -183,7 +188,7 @@ int main()
 
         // render
         // ------
-        glClearColor(0.2, 0.2f, 0.2f, 1.0f);
+        glClearColor(0.1, 0.1f, 0.1f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
      
@@ -228,7 +233,11 @@ int main()
         lightingShader.setFloat("pointLights[2].linear", 0.09);
         lightingShader.setFloat("pointLights[2].quadratic", 0.032);
         // point light 4
-        lightingShader.setVec3("pointLights[3].position", pointLightPositions[3]);
+
+        light3_mov_y = pointLightPositions[3].y + cos(glfwGetTime()) * 2.5;
+        light3_mov_z = pointLightPositions[3].z + sin(glfwGetTime()) * 2.0 ;
+
+        lightingShader.setVec3("pointLights[3].position", pointLightPositions[3].x, light3_mov_y, light3_mov_z );
         lightingShader.setVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
         lightingShader.setVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
         lightingShader.setVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
@@ -236,6 +245,7 @@ int main()
         lightingShader.setFloat("pointLights[3].linear", 0.09);
         lightingShader.setFloat("pointLights[3].quadratic", 0.032);
         // spotLight
+        
         lightingShader.setVec3("spotLight.position", camera.Position);
         lightingShader.setVec3("spotLight.direction", camera.Front);
         lightingShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
@@ -244,10 +254,10 @@ int main()
         lightingShader.setFloat("spotLight.constant", 1.0f);
         lightingShader.setFloat("spotLight.linear", 0.09);
         lightingShader.setFloat("spotLight.quadratic", 0.032);
-        lightingShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-        lightingShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
-
-
+        lightingShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(7.0f)));
+        lightingShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(12.0f)));
+        
+     
 
 
 
@@ -268,23 +278,30 @@ int main()
         lightingShader.setMat4("model", model);
         ourModel.Draw(modelShader);
 
-         // also draw the lamp object(s)
-         //modelShader.use();
-         //modelShader.setMat4("projection", projection);
-         //modelShader.setMat4("view", view);
+         //also draw the lamp object(s)
+         modelShader.use();
+         modelShader.setMat4("projection", projection);
+         modelShader.setMat4("view", view);
     
-        /*
+        
          // we now draw as many light bulbs as we have point lights.
          glBindVertexArray(lightCubeVAO);
          for (unsigned int i = 0; i < 4; i++)
          {
              model = glm::mat4(1.0f);
-             model = glm::translate(model, pointLightPositions[i]);
+
+             if (i == 3)
+             {
+                 model = glm::translate(model, glm::vec3(pointLightPositions[3].x, light3_mov_y, light3_mov_z) );
+             }
+             else   
+                model = glm::translate(model, pointLightPositions[i]);
+
              model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
              modelShader.setMat4("model", model);
              glDrawArrays(GL_TRIANGLES, 0, 36);
          }
-         */
+         
 
       
 
