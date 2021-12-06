@@ -24,7 +24,7 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 4.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -167,10 +167,9 @@ int main()
 
     
 
-    float light3_mov_y;
-    float light3_mov_z;
 
 
+   
 
     // render loop
     // -----------
@@ -191,7 +190,6 @@ int main()
         glClearColor(0.1, 0.1f, 0.1f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-     
         // be sure to activate shader when setting uniforms/drawing objects
         lightingShader.use();
         lightingShader.setVec3("viewPos", camera.Position);
@@ -234,8 +232,9 @@ int main()
         lightingShader.setFloat("pointLights[2].quadratic", 0.032);
         // point light 4
 
-        light3_mov_y = pointLightPositions[3].y + cos(glfwGetTime()) * 2.5;
-        light3_mov_z = pointLightPositions[3].z + sin(glfwGetTime()) * 2.0 ;
+
+        float light3_mov_y = pointLightPositions[3].y + cos(glfwGetTime()) * 2.5;
+        float light3_mov_z = pointLightPositions[3].z + sin(glfwGetTime()) * 2.0 ;
 
         lightingShader.setVec3("pointLights[3].position", pointLightPositions[3].x, light3_mov_y, light3_mov_z );
         lightingShader.setVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
@@ -245,8 +244,7 @@ int main()
         lightingShader.setFloat("pointLights[3].linear", 0.09);
         lightingShader.setFloat("pointLights[3].quadratic", 0.032);
         // spotLight
-        
-        lightingShader.setVec3("spotLight.position", camera.Position);
+        lightingShader.setVec3("spotLight.position", camera.Position );
         lightingShader.setVec3("spotLight.direction", camera.Front);
         lightingShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
         lightingShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
@@ -254,11 +252,13 @@ int main()
         lightingShader.setFloat("spotLight.constant", 1.0f);
         lightingShader.setFloat("spotLight.linear", 0.09);
         lightingShader.setFloat("spotLight.quadratic", 0.032);
-        lightingShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(7.0f)));
-        lightingShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(12.0f)));
+        lightingShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(8.0f)));
+        lightingShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(9.0f)));
         
      
-
+      
+       
+      
 
 
         // view/projection transformations
@@ -266,7 +266,6 @@ int main()
         glm::mat4 view = camera.GetViewMatrix();
         lightingShader.setMat4("projection", projection);
         lightingShader.setMat4("view", view);
-
 
 
         // world transformation
@@ -303,8 +302,7 @@ int main()
          }
          
 
-      
-
+        
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
@@ -322,9 +320,11 @@ int main()
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
+
+   
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-
+    
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.ProcessKeyboard(FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -333,7 +333,12 @@ void processInput(GLFWwindow *window)
         camera.ProcessKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboard(RIGHT, deltaTime);
+    
+
+
 }
+
+
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
@@ -346,6 +351,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
     if (firstMouse)
@@ -363,6 +369,8 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
+
+
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
