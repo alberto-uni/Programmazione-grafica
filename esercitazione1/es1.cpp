@@ -1,3 +1,16 @@
+/*
+Nell'esercitazione sono presenti 4 Point Light, Una Directional Light e una luce Spotlight che punta nella stessa direzione della camera
+3 delle point light sono statiche mentre una ruota attorno al modello
+Le point light sono rappresentate come semplici cubi
+Il lighting viene calcolato all'interno del Tangent Space
+
+Il movimento della camera viene gestito dall'utente utlizzando i tasti WASD, mentre la direzione viene decisa dalla posizione del mouse
+Per far questo viene utilizzata la classe Camera
+il modello statico utilizzato è il backpack preso dalla dipsensa di LearOpenGL sviluppata da JoeyDeVries https://github.com/JoeyDeVries/LearnOpenGL/tree/master/resources/objects/backpack
+e viene caricato tramite l'utlizzo della libreira assimp
+*/
+
+//includo le librerie necessarie
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #define STB_IMAGE_IMPLEMENTATION
@@ -19,17 +32,15 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 unsigned int loadTexture(const char *path);
 
-// settings
+//imposto dimensione della finestra
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-// camera
+// imposto posizione iniziale della camera
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
-
-// timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
@@ -37,7 +48,7 @@ float lastFrame = 0.0f;
 
 int main()
 {
-    // glfw: initialize and configure
+    // glfw: configurazione
     // ------------------------------
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -48,7 +59,7 @@ int main()
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    // glfw window creation
+    // glfw: creo la finestra
     // --------------------
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
@@ -62,10 +73,10 @@ int main()
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
 
-    // tell GLFW to capture our mouse
+    // cattura mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    // glad: load all OpenGL function pointers
+    // glad
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -73,18 +84,22 @@ int main()
         return -1;
     }
 
+    //flip sull'asse delle y
     stbi_set_flip_vertically_on_load(true);
-    // configure global opengl state
+
+    // abilito depth testing. Buffer di profondita'
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
 
-    // build and compile our shader zprogram
+    // creazione degli shader
+    // uno per gestire il lightinge uno per il modello
     // ------------------------------------
     Shader lightingShader("es1Lights.vs", "es1Lights.fs");
     Shader modelShader("es1model_Load.vs", "es1model_Load.fs");
-
+    //percorso modello
     Model ourModel("C:/Users/Baroni Alberto/Desktop/sguola/Magistrale/grafica/backpack/backpack.obj");
-    // set up vertex data (and buffer(s)) and configure vertex attributes
+    // definizione vertici per il cubo
+    // 36 verticci --> 6 vertici per faccia 
     // ------------------------------------------------------------------
     float vertices[] = {
         //Posizioni       
@@ -131,16 +146,16 @@ int main()
         -0.5f,  0.5f, -0.5f
     };
  
-    // positions of the point lights
+    // posizioni Lampadine/Point Lights
     glm::vec3 pointLightPositions[] = {
         glm::vec3( 2.0,  2.0f,  1.0f),
         glm::vec3( -2.0f, -2.0f, -1.0f),
         glm::vec3(1.0f,  0.0f, 1.0f),
         glm::vec3( 0.0f,  0.0f, 0.0f)
     };
-    // first, configure the cube's VAO (and VBO)
+    // configurazione Vertex Array Object(VAO) usato dal cubo
 
-    //Cube 
+    //Cubo
     unsigned int VBO, modelVAO;
     glGenVertexArrays(1, &modelVAO);
     glGenBuffers(1, &VBO);
@@ -154,8 +169,8 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-
-    //Light 
+    // configurazione Vertex Array Object(VAO) usato dal lighting
+    //Light VAO
     unsigned int lightCubeVAO;
     glGenVertexArrays(1, &lightCubeVAO);
     glBindVertexArray(lightCubeVAO);
@@ -175,32 +190,35 @@ int main()
     // -----------
     while (!glfwWindowShouldClose(window))
     {
-        // per-frame time logic
+        // calcolo deltaTime e LastFrame. Utilizzato per il movimento della camera
         // --------------------
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // input
+        // input ricevuto da tastiera, tasti WASD
         // -----
         processInput(window);
 
-        // render
-        // ------
+        // decido il  colore dello sfondo tramite glClearColor 
         glClearColor(0.1, 0.1f, 0.1f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //pulizia buffer
 
-        // be sure to activate shader when setting uniforms/drawing objects
+        // attivo gli shader
         lightingShader.use();
-        lightingShader.setVec3("viewPos", camera.Position);
-        lightingShader.setFloat("material.shininess", 32.0f);
+        lightingShader.setVec3("viewPos", camera.Position); // view basata sulla posizione della camera
+        lightingShader.setFloat("material.shininess", 32.0f); // shiness impostato a 32, determina riflesso della luce sull'oggetto
 
+   
+        
         /*
-           Here we set all the uniforms for the 5/6 types of lights we have. We have to set them manually and index 
-           the proper PointLight struct in the array to set each uniform variable. This can be done more code-friendly
-           by defining light types as classes and set their values in there, or by using a more efficient uniform approach
-           by using 'Uniform buffer objects', but that is something we'll discuss in the 'Advanced GLSL' tutorial.
+        Qui vado a definire tutte le specifiche necessarie per le luci tramite variabili Uniform
+        Ogni luce presenta una componente direzionale, una ambientale, uan diffusiva e una speculare
+        Le lampadine presentano anche una posizione all'interno della scena e 3 componenti(costante,lineare,quadratica) utilizzate nel calcolo dell'attenuazione
+        Lo spotlight prende la posizione della camera come riferimento
         */
+
+
        // // directional light
         lightingShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
         lightingShader.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
@@ -230,9 +248,9 @@ int main()
         lightingShader.setFloat("pointLights[2].constant", 1.0f);
         lightingShader.setFloat("pointLights[2].linear", 0.09);
         lightingShader.setFloat("pointLights[2].quadratic", 0.032);
-        // point light 4
 
 
+        // point light 4 le coordinate y e z cambiano in base al tempo
         float light3_mov_y = pointLightPositions[3].y + cos(glfwGetTime()) * 2.5;
         float light3_mov_z = pointLightPositions[3].z + sin(glfwGetTime()) * 2.0 ;
 
@@ -261,29 +279,28 @@ int main()
       
 
 
-        // view/projection transformations
+        //trasformazione view/projection 
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = camera.GetViewMatrix();
         lightingShader.setMat4("projection", projection);
         lightingShader.setMat4("view", view);
 
 
-        // world transformation
+        //trasformazione world 
         glm::mat4 model = glm::mat4(1.0f);
         lightingShader.setMat4("model", model);
 
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+        //render del backpack
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); //modello al centro della scena
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// rimpicciolisco il modello
         lightingShader.setMat4("model", model);
         ourModel.Draw(modelShader);
 
-         //also draw the lamp object(s)
+         //draw dell lampadine nella scena
          modelShader.use();
          modelShader.setMat4("projection", projection);
          modelShader.setMat4("view", view);
-    
-        
-         // we now draw as many light bulbs as we have point lights.
+        //la quarta luce dovra' muoversi attorno allo zaino 
          glBindVertexArray(lightCubeVAO);
          for (unsigned int i = 0; i < 4; i++)
          {
@@ -303,20 +320,18 @@ int main()
          
 
         
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        // -------------------------------------------------------------------------------
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        glfwSwapBuffers(window);  //swap del color buffer
+        glfwPollEvents();   //controlla se sono stati ricevuti input da tastiera o mouse
     }
 
 
-    // glfw: terminate, clearing all previously allocated GLFW resources.
+    //termina e de-alloca le risorse glfw
     // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// processa gli input che arrivano da tastiera, muove la camera in base al tasto premuto
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
@@ -325,13 +340,13 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
     
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) //W camera in avanti
         camera.ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) //S camera indietro
         camera.ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) //A camera a sinistra
         camera.ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) //D camera a destra
         camera.ProcessKeyboard(RIGHT, deltaTime);
     
 
@@ -340,18 +355,16 @@ void processInput(GLFWwindow *window)
 
 
 
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// callback che si occupa della gestione della window
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
+    // la viewport deve essere uguale alla dimensione della window 
     glViewport(0, 0, width, height);
 }
 
-// glfw: whenever the mouse moves, this callback is called
+// callback per il movimento del mouse
 // -------------------------------------------------------
-
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
     if (firstMouse)
@@ -362,7 +375,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     }
 
     float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    float yoffset = lastY - ypos; // invertite siccome y va dal basso verso l'alto
 
     lastX = xpos;
     lastY = ypos;
@@ -372,50 +385,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 
 
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+//call back per la rotellina del mouse 
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     camera.ProcessMouseScroll(yoffset);
-}
-
-// utility function for loading a 2D texture from file
-// ---------------------------------------------------
-unsigned int loadTexture(char const * path)
-{
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-
-    int width, height, nrComponents;
-    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
-    if (data)
-    {
-        GLenum format;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
-
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        stbi_image_free(data);
-    }
-    else
-    {
-        std::cout << "Texture failed to load at path: " << path << std::endl;
-        stbi_image_free(data);
-    }
-
-    return textureID;
 }
 
 

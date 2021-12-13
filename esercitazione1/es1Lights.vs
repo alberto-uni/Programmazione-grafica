@@ -1,3 +1,4 @@
+//Vertex Shader lighting
 #version 330 core
 
 layout (location = 0) in vec3 aPos;
@@ -10,7 +11,7 @@ out VS_OUT {
     vec3 FragPos;
     vec2 TexCoords;
     vec3 Normal;
-    //vec3 TangentLightPos; non possiamo calcolarlo perchè non abbiamo la posizione delle lampadine qui nel vertex shader
+    //vec3 TangentLightPos; 
     vec3 TangentViewPos;
     vec3 TangentFragPos;
     mat3 TBN;
@@ -24,19 +25,20 @@ uniform vec3 viewPos;
 
 void main()
 {
-    //FragPos, TextCoords e Normal rimangono uguali rispetto a quando non veniva usato il tangent space
+    //Calcolo FragPos, TextCoords e Normal 
     vs_out.FragPos = vec3(model * vec4(aPos, 1.0)); 
     vs_out.TexCoords = aTexCoords;
     vs_out.Normal = mat3(transpose(inverse(model))) * aNormal; 
 
 
-    //configuriamo la matrice TBN (lavoriamo nello spazio mondo moltiplicando per la matrice model)
+    //configuriamo la matrice TBN, siamo nello spazio mondo siccome moltiplichiamo per model
     vec3 T = normalize(vec3(model * vec4(aTangent,   0.0)));
     vec3 B = normalize(vec3(model * vec4(aBitangent, 0.0)));
     vec3 N = normalize(vec3(model * vec4(aNormal,    0.0)));
-   
+   //inversa della matrice TBN, siccome mi serve trasformare i vettori dallo spazio mondo allo spazio tangent
+   //uso il transpose essenso la matrice ortogonale
     vs_out.TBN = transpose(mat3(T, B, N));
-
+    //trasformazione dei vettori viewPos e FragPos nel Tangent
     vs_out.TangentViewPos  = vs_out.TBN * viewPos;
     vs_out.TangentFragPos  = vs_out.TBN * vs_out.FragPos;
 
