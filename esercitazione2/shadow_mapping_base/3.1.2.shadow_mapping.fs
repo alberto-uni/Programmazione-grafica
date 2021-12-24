@@ -16,15 +16,15 @@ uniform vec3 viewPos;
 
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
-    // perform perspective divide
+    //divisione per la prospettiva
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    // transform to [0,1] range
+    // trasformo in range[0,1] 
     projCoords = projCoords * 0.5 + 0.5;
-    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    // ottengo la closest depth value dalla light prospective
     float closestDepth = texture(shadowMap, projCoords.xy).r; 
-    // get depth of current fragment from light's perspective
+    // ottengo la depth del fragment dalla  light perspective
     float currentDepth = projCoords.z;
-    // check whether current frag pos is in shadow
+    //check per verificare se la depth è in una zona d'ombra
     float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
 
     return shadow;
@@ -48,7 +48,7 @@ void main()
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
     vec3 specular = spec * lightColor;    
-    // calculate shadow
+    // calcolo shadow
     float shadow = ShadowCalculation(fs_in.FragPosLightSpace);                      
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
     
