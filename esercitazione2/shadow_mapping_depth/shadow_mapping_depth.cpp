@@ -42,7 +42,7 @@ unsigned int planeVAO;
 
 int main()
 {
-    // glfw: initialize and configure
+    // glfw: inizializzazione 
     // ------------------------------
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -53,7 +53,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    // glfw window creation
+    // glfw creazione finestra 
     // --------------------
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
@@ -67,10 +67,10 @@ int main()
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
 
-    // tell GLFW to capture our mouse
+    // cattura mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    // glad: load all OpenGL function pointers
+    // glad:caricamento function pointers 
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -78,16 +78,16 @@ int main()
         return -1;
     }
 
-    // configure global opengl state
+    // attivo GL_DEPTH_TEST
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
 
-    // build and compile shaders
+    // build dei due shader
     // -------------------------
     Shader simpleDepthShader("3.1.1.shadow_mapping_depth.vs", "3.1.1.shadow_mapping_depth.fs");
     Shader debugDepthQuad("3.1.1.debug_quad.vs", "3.1.1.debug_quad_depth.fs");
 
-    // set up vertex data (and buffer(s)) and configure vertex attributes
+    //definisco i vertici e configuro vertex attribute
     // ------------------------------------------------------------------
     float planeVertices[] = {
         // positions            // normals         // texcoords
@@ -99,7 +99,7 @@ int main()
         -25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
          25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 10.0f
     };
-    // plane VAO
+    // configurazione VAO
     unsigned int planeVBO;
     glGenVertexArrays(1, &planeVAO);
     glGenBuffers(1, &planeVBO);
@@ -114,16 +114,16 @@ int main()
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glBindVertexArray(0);
 
-    // load textures
+    // carico la texture wood.png
     // -------------
     unsigned int woodTexture = loadTexture("tex/wood.png");
 
-    // configure depth map FBO
+    // configuro la death map
     // -----------------------
     const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
     unsigned int depthMapFBO;
     glGenFramebuffers(1, &depthMapFBO);
-    // create depth texture
+    //creazione depth texture che verrà usata come depth buffer
     unsigned int depthMap;
     glGenTextures(1, &depthMap);
     glBindTexture(GL_TEXTURE_2D, depthMap);
@@ -132,7 +132,6 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // attach depth texture as FBO's depth buffer
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
     glDrawBuffer(GL_NONE);
@@ -140,12 +139,12 @@ int main()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
-    // shader configuration
+    // configurazione shader
     // --------------------
     debugDepthQuad.use();
     debugDepthQuad.setInt("depthMap", 0);
 
-    // lighting info
+    // posizione luce
     // -------------
     glm::vec3 lightPos(-2.0f, 4.0f, -1.0f);
 
@@ -153,7 +152,7 @@ int main()
     // -----------
     while (!glfwWindowShouldClose(window))
     {
-        // per-frame time logic
+        // info per frame  
         // --------------------
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -168,7 +167,7 @@ int main()
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // 1. render depth of scene to texture (from light's perspective)
+        // 1. render depth dalla prospettiva della luce
         // --------------------------------------------------------------
         glm::mat4 lightProjection, lightView;
         glm::mat4 lightSpaceMatrix;
@@ -176,7 +175,6 @@ int main()
         lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
         lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
         lightSpaceMatrix = lightProjection * lightView;
-        // render scene from light's point of view
         simpleDepthShader.use();
         simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
@@ -192,7 +190,7 @@ int main()
         glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // render Depth map to quad for visual debugging
+        // render Depth map su quad 
         // ---------------------------------------------
         debugDepthQuad.use();
         debugDepthQuad.setFloat("near_plane", near_plane);
@@ -201,13 +199,13 @@ int main()
         glBindTexture(GL_TEXTURE_2D, depthMap);
         renderQuad();
 
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+        // glfw:rileva eventuali movimenti del mouse/input da tastiera
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    // optional: de-allocate all resources once they've outlived their purpose:
+    //de-alloco risorse
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &planeVAO);
     glDeleteBuffers(1, &planeVBO);
@@ -216,7 +214,7 @@ int main()
     return 0;
 }
 
-// renders the 3D scene
+// renders della scena 3D
 // --------------------
 void renderScene(const Shader &shader)
 {
@@ -245,13 +243,12 @@ void renderScene(const Shader &shader)
 }
 
 
-// renderCube() renders a 1x1 3D cube in NDC.
+// renderCube() genera un cubo di coordinate normalizzate
 // -------------------------------------------------
 unsigned int cubeVAO = 0;
 unsigned int cubeVBO = 0;
 void renderCube()
 {
-    // initialize (if necessary)
     if (cubeVAO == 0)
     {
         float vertices[] = {
@@ -300,10 +297,8 @@ void renderCube()
         };
         glGenVertexArrays(1, &cubeVAO);
         glGenBuffers(1, &cubeVBO);
-        // fill buffer
         glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        // link vertex attributes
         glBindVertexArray(cubeVAO);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
@@ -320,7 +315,7 @@ void renderCube()
     glBindVertexArray(0);
 }
 
-// renderQuad() renders a 1x1 XY quad in NDC
+// renderQuad() renderizza un quadrato in coordinate normalizzate
 // -----------------------------------------
 unsigned int quadVAO = 0;
 unsigned int quadVBO;
@@ -335,7 +330,7 @@ void renderQuad()
              1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
              1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
         };
-        // setup plane VAO
+        // setup VAO
         glGenVertexArrays(1, &quadVAO);
         glGenBuffers(1, &quadVBO);
         glBindVertexArray(quadVAO);
@@ -351,7 +346,7 @@ void renderQuad()
     glBindVertexArray(0);
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// processa gli input dell'utente
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
@@ -368,16 +363,14 @@ void processInput(GLFWwindow *window)
         camera.ProcessKeyboard(RIGHT, deltaTime);
 }
 
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// glfw: funzione chiamata ogni volta che la dimensione della finestra cambia
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }
 
-// glfw: whenever the mouse moves, this callback is called
+// glfw: funzione chiamato ogni volta che muoviamo il mouse
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
@@ -389,7 +382,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     }
 
     float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    float yoffset = lastY - ypos; // invertita
 
     lastX = xpos;
     lastY = ypos;
@@ -397,14 +390,14 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// glfw: funzione per la rotellina del mouse
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     camera.ProcessMouseScroll(yoffset);
 }
 
-// utility function for loading a 2D texture from file
+// funzione per il caricamento di texture
 // ---------------------------------------------------
 unsigned int loadTexture(char const * path)
 {
