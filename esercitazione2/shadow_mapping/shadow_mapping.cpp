@@ -239,7 +239,7 @@ int main()
     return 0;
 }
 
-// renders della scena
+// render della scena
 // --------------------
 void renderScene(const Shader &shader)
 {
