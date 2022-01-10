@@ -361,7 +361,7 @@ void processInput(GLFWwindow *window)
         camera.ProcessKeyboard(RIGHT, deltaTime);
 }
 
-// glfw: glfw: funzione chiamata ogni volta che la dimensione della finestra cambia
+//  glfw: funzione chiamata ogni volta che la dimensione della finestra cambia
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -370,7 +370,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-// glfw: glfw: funzione chiamato ogni volta che muoviamo il mouse
+//  glfw: funzione chiamato ogni volta che muoviamo il mouse
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
