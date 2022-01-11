@@ -88,7 +88,6 @@ int main()
     // -------------------------
     Shader shader("3.1.3.shadow_mapping.vs", "3.1.3.shadow_mapping.fs");
     Shader simpleDepthShader("3.1.3.shadow_mapping_depth.vs", "3.1.3.shadow_mapping_depth.fs");
-    Shader debugDepthQuad("3.1.3.debug_quad.vs", "3.1.3.debug_quad_depth.fs");
 
     // configurazione vertici 
     // ------------------------------------------------------------------
@@ -150,8 +149,8 @@ int main()
     shader.use();
     shader.setInt("diffuseTexture", 0);
     shader.setInt("shadowMap", 1);
-    debugDepthQuad.use();
-    debugDepthQuad.setInt("depthMap", 0);
+
+
 
     // posizione iniziale della luce
     // -------------
@@ -239,7 +238,7 @@ int main()
     return 0;
 }
 
-// render della scena
+// renders della scena
 // --------------------
 void renderScene(const Shader &shader)
 {
@@ -361,7 +360,7 @@ void processInput(GLFWwindow *window)
         camera.ProcessKeyboard(RIGHT, deltaTime);
 }
 
-//  glfw: funzione chiamata ogni volta che la dimensione della finestra cambia
+// glfw: glfw: funzione chiamata ogni volta che la dimensione della finestra cambia
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -370,7 +369,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-//  glfw: funzione chiamato ogni volta che muoviamo il mouse
+// glfw: glfw: funzione chiamato ogni volta che muoviamo il mouse
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
